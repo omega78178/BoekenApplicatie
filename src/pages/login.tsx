@@ -1,10 +1,24 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import Logo from "../components/Logo";
+import group from "../assets/Group.svg";
+import paperPurple from "../assets/paper_purple.svg";
+import rondje from "../assets/rondje.svg";
+import driehoek from "../assets/driehoek.svg";
 
 function App() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log(email, password);
+  };
+
   return (
     <>
-      <div className="min-h-screen w-full bg-bg-canvas flex flex-col lg:flex-row overflow-hidden bg-cobalt">
-        <div className="flex-1 px-6 py-10 lg:px-20 lg:py-16 gap-8 bg-action-primary border-b-2 lg:border-b-0 lg:border-r-2 border-border-strong flex flex-col justify-between items-start">
+      <div className="min-h-screen w-full flex flex-col lg:flex-row overflow-hidden">
+        <div className="flex-1 px-6 py-10 lg:px-20 lg:py-16 gap-8 bg-cobalt border-b-2 lg:border-b-0 lg:border-r-2 border-ink flex flex-col justify-between items-start">
           <div className="size- inline-flex justify-start items-center gap-3">
             <Logo />
           </div>
@@ -40,18 +54,26 @@ function App() {
 
             {/* Figuren: eigen container */}
             <div className="absolute inset-0">
-              <div className="w-48 h-56 left-[46.86px] top-[89.84px] absolute">
-                <div className="w-40 h-48 left-0 top-[22.27px] absolute bg-white outline outline-[3px] outline-offset-[-1.50px] outline-neutral-900" />
-                <div className="size-12 left-[108.93px] top-[6.96px] absolute bg-amber-300 outline outline-[3px] outline-offset-[-1.50px] outline-neutral-900" />
-                <div className="w-24 h-2.5 left-[34.90px] top-[98.15px] absolute bg-neutral-900" />
-                <div className="w-16 h-2.5 left-[37.68px] top-[117.95px] absolute bg-neutral-900" />
-              </div>
-
-              <div className="w-40 h-48 left-[260.89px] top-[72.19px] absolute bg-white outline outline-[3px] outline-offset-[-1.50px] outline-neutral-900" />
-              <div className="size-12 left-[370.29px] top-[83.68px] absolute bg-pink-300 outline outline-[3px] outline-offset-[-1.50px] outline-neutral-900" />
-              <div className="size-12 left-[289.06px] top-[129.44px] absolute bg-pink-300 outline outline-[3px] outline-offset-[-1.50px] outline-neutral-900" />
-              <div className="size-28 left-[420px] top-[210px] absolute bg-red-500 outline outline-[3px] outline-offset-[-1.50px] outline-neutral-900" />
-              <div className="w-36 h-28 left-[360px] top-[40px] absolute bg-emerald-300 outline outline-[3px] outline-offset-[-1.50px] outline-neutral-900" />
+              <img
+                src={group}
+                alt=""
+                className="absolute left-[46px] top-[90px] w-[190px] h-[224px]"
+              />
+              <img
+                src={paperPurple}
+                alt=""
+                className="absolute left-[252px] top-[62px] w-[184px] h-[219px]"
+              />
+              <img
+                src={rondje}
+                alt=""
+                className="absolute left-[420px] top-[210px] w-[123px] h-[123px]"
+              />
+              <img
+                src={driehoek}
+                alt=""
+                className="absolute left-[360px] top-[40px] w-[143px] h-[113px]"
+              />
             </div>
           </div>
           <div className="justify-start">
@@ -64,14 +86,17 @@ function App() {
             </span>
           </div>
         </div>
-        <div className="flex-1 px-6 py-10 flex flex-col justify-center items-center">
-          <div className="w-full max-w-sm p-6 lg:p-10 bg-bg-surface rounded-xl shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] outline outline-2 outline-offset-[-2px] outline-border-strong flex flex-col justify-start items-start gap-6">
+        <div className="flex-1 px-6 py-10 bg- flex flex-col justify-center items-center">
+          <form
+            onSubmit={handleSubmit}
+            className="w-full max-w-sm p-6 lg:p-10 bg-bg-surface rounded-xl shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] outline outline-2 outline-offset-[-2px] outline-border-strong flex flex-col justify-start items-start gap-6"
+          >
             <div className="size- flex flex-col justify-start items-start gap-2">
               <div
                 data-type="Admin"
-                className="size- px-3 py-1 bg-action-primary rounded-[999px] outline outline-[1.50px] outline-offset-[-1.50px] outline-border-strong inline-flex justify-start items-center gap-1"
+                className="size- px-3 py-1 bg-action-primary rounded-[999px] outline outline-[1.50px] outline-offset-[-1.50px] outline-border-strong inline-flex justify-start items-center gap-1 bg-cobalt"
               >
-                <div className="justify-start text-text-inverse text-xs font-medium font-['DM_Mono'] uppercase leading-4 tracking-wide">
+                <div className="justify-start text-text-inverse text-white text-xs font-medium font-['DM_Mono'] uppercase leading-4 tracking-wide">
                   Admin
                 </div>
               </div>
@@ -87,9 +112,13 @@ function App() {
                 E-mailadres
               </div>
               <div className="self-stretch px-4 py-3 bg-bg-surface rounded-xl outline outline-2 outline-offset-[-2px] outline-border-strong inline-flex justify-start items-start">
-                <div className="justify-start text-text-primary text-base font-normal font-['DM_Sans'] leading-6">
-                  admin@admin.com
-                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@admin.com"
+                  className="w-full bg-transparent outline-none text-text-primary text-base font-normal font-['DM_Sans'] leading-6"
+                />
               </div>
             </div>
             <div
@@ -101,27 +130,39 @@ function App() {
               </div>
               <div className="self-stretch px-4 py-3 bg-bg-surface rounded-xl shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline outline-[3px] outline-offset-[-3px] outline-border-focus inline-flex justify-start items-start">
                 <div className="justify-start text-text-primary text-base font-normal font-['DM_Sans'] leading-6">
-                  •••••
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-transparent outline-none text-text-primary text-base font-normal font-['DM_Sans'] leading-6"
+                  />
                 </div>
               </div>
             </div>
             <div
               data-show-icon="false"
               data-variant="Primary"
-              className="self-stretch px-6 py-3 bg-action-primary rounded-[999px] shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline outline-2 outline-offset-[-2px] outline-border-strong inline-flex justify-center items-center gap-2"
+              className="relative self-stretch px-6 py-3 bg-action-primary rounded-[999px] shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline outline-2 outline-offset-[-2px] outline-border-strong inline-flex justify-center items-center gap-2 bg-cobalt"
             >
-              <div className="justify-start text-text-inverse text-base font-bold font-['DM_Sans'] leading-4">
+              <button
+                type="submit"
+                className="justify-start text-text-inverse text-white text-base font-bold font-['DM_Sans'] leading-4 cursor-pointer after:absolute after:inset-0 after:content-['']"
+              >
                 Inloggen
-              </div>
+              </button>
             </div>
             <div className="self-stretch justify-start text-text-muted text-sm font-medium font-['DM_Sans'] leading-5">
               Zonder login kun je alles bekijken. Genres toevoegen, wijzigen of
               verwijderen mag alleen een admin.
             </div>
-            <div className="justify-start text-text-link text-base font-bold font-['DM_Sans'] leading-4">
+            <Link
+              to="/book"
+              className="text-text-link text-base font-bold font-['DM_Sans'] leading-4 text-cobalt"
+            >
               Verder zonder inloggen →
-            </div>
-          </div>
+            </Link>
+          </form>
         </div>
       </div>
     </>
