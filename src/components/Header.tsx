@@ -1,4 +1,5 @@
 import Logo from "../components/Logo";
+import Badge from "../components/Badge";
 
 export default function Header() {
   return (
@@ -48,14 +49,7 @@ export default function Header() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div
-            data-type="Admin"
-            className="px-3 py-1 bg-action-primary rounded-[999px] outline outline-[1.50px] outline-offset-[-1.50px] outline-border-strong flex items-center gap-1"
-          >
-            <div className="text-text-inverse text-xs font-medium font-['DM_Mono'] uppercase leading-4 tracking-wide">
-              Admin
-            </div>
-          </div>
+          <Badge />
           <div
             data-show-icon="true"
             data-variant="Ghost"

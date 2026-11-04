@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "../components/Logo";
+import Badge from "../components/Badge";
 import group from "../assets/Group.svg";
 import paperPurple from "../assets/paper_purple.svg";
 import rondje from "../assets/rondje.svg";
@@ -92,14 +93,7 @@ function App() {
             className="w-full max-w-sm p-6 lg:p-10 bg-bg-surface rounded-xl shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] outline outline-2 outline-offset-[-2px] outline-border-strong flex flex-col justify-start items-start gap-6"
           >
             <div className="size- flex flex-col justify-start items-start gap-2">
-              <div
-                data-type="Admin"
-                className="size- px-3 py-1 bg-action-primary rounded-[999px] outline outline-[1.50px] outline-offset-[-1.50px] outline-border-strong inline-flex justify-start items-center gap-1 bg-cobalt"
-              >
-                <div className="justify-start text-text-inverse text-white text-xs font-medium font-['DM_Mono'] uppercase leading-4 tracking-wide">
-                  Admin
-                </div>
-              </div>
+              <Badge />
               <div className="justify-start text-text-primary text-5xl font-semibold font-['Fraunces'] leading-10">
                 Inloggen
               </div>
