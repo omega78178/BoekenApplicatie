@@ -1,5 +1,5 @@
 // src/components/Logo.tsx
-import logo from "../assets/Logo.svg";
+import logo from "../assets/logo.svg";
 
 type LogoProps = {
   variant?: "light" | "dark";

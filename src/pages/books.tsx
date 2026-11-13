@@ -14,7 +14,7 @@ export default function Book() {
       {/* 4 kaarten per rij die de volle breedte van de container vullen */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl mx-auto px-8 py-8">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Entitycard key={i} />
+          <Entitycard key={i} type="book" />
         ))}
       </div>
     </div>

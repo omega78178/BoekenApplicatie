@@ -1,19 +1,28 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import Badge from "../components/Badge";
-import group from "../assets/Group.svg";
-import paperPurple from "../assets/paper_purple.svg";
-import rondje from "../assets/rondje.svg";
-import driehoek from "../assets/driehoek.svg";
+import group from "../assets/login-paper-yellow.svg";
+import paperPurple from "../assets/login-paper-pink.svg";
+import rondje from "../assets/login-circle.svg";
+import driehoek from "../assets/login-triangle.svg";
+import { useAuth } from "../hooks/Authcontext";
 
 function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(email, password);
+    const ok = await login(email, password);
+    if (ok) {
+      navigate("/book");
+    } else {
+      setError("E-mailadres of wachtwoord is onjuist");
+    }
   };
 
   return (
@@ -25,34 +34,12 @@ function App() {
           </div>
           <div className="hidden lg:block w-[560px] h-96 relative">
             {/* Lijnen: eigen container */}
-            <div className="absolute inset-0 opacity-25">
-              <div className="w-1 h-96 left-0 top-0 absolute bg-black outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[40px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[80px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[120px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[160px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[200px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[240px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[280px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[320px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[360px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[400px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[440px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[480px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[520px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-1 h-96 left-[560px] top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-0 absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-[40px] absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-[80px] absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-[120px] absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-[160px] absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-[200px] absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-[240px] absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-[280px] absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-[320px] absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-              <div className="w-[560px] h-1 left-0 top-[360px] absolute bg-black outline outline-1 outline-offset-[-0.50px] outline-white" />
-            </div>
-
+            <div
+              className="absolute left-0 top-0 w-[562px] h-[362px]
+    border-2 border-white/20
+    bg-[linear-gradient(to_right,rgb(255_255_255/0.1)_1px,transparent_3px),linear-gradient(to_bottom,rgb(255_255_255/0.1)_3px,transparent_1px)]
+    bg-size-[40px_40px] bg-origin-border bg-clip-padding"
+            />
             {/* Figuren: eigen container */}
             <div className="absolute inset-0">
               <img
@@ -82,7 +69,7 @@ function App() {
               Welkom terug,
               <br />
             </span>
-            <span className="text-text-inverse text-4xl lg:text-7xl text-white font-semibold font-['Fraunces'] leading-tight lg:leading-[72px]">
+            <span className="text-text-inverse text-4xl lg:text-7xl text-white font-semibold font-['Fraunces'] italic leading-tight lg:leading-[72px]">
               boekenwurm.
             </span>
           </div>
@@ -94,7 +81,9 @@ function App() {
           >
             <div className="size- flex flex-col justify-start items-start gap-2">
               <Badge />
+
               <div className="justify-start text-text-primary text-5xl font-semibold font-['Fraunces'] leading-10">
+                {error && <p className="text-red-600 text-sm">{error}</p>}
                 Inloggen
               </div>
             </div>
@@ -137,7 +126,7 @@ function App() {
             <div
               data-show-icon="false"
               data-variant="Primary"
-              className="relative self-stretch px-6 py-3 bg-action-primary rounded-[999px] shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline outline-2 outline-offset-[-2px] outline-border-strong inline-flex justify-center items-center gap-2 bg-cobalt"
+              className="relative self-stretch px-6 py-3 bg-action-primary rounded-[999px] shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline outline-2 outline-offset-[-2px] outline-border-strong inline-flex justify-center items-center gap-2 bg-cobalt cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
               <button
                 type="submit"
@@ -152,6 +141,7 @@ function App() {
             </div>
             <Link
               to="/book"
+              onClick={() => logout()}
               className="text-text-link text-base font-bold font-['DM_Sans'] leading-4 text-cobalt"
             >
               Verder zonder inloggen →
