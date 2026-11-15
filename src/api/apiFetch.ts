@@ -16,7 +16,20 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   });
 
   if (!response.ok) {
-    throw new Error("Verzoek mislukt: " + response.status);
+    // Probeer de foutmelding van de API te lezen (bv. { "message": "..." })
+    let message = "";
+    try {
+      const body = await response.json();
+      message = body.message ?? "";
+    } catch {
+      // geen JSON teruggekregen, dan alleen de statuscode tonen
+    }
+    throw new Error(`Verzoek mislukt (${response.status})${message ? ": " + message : ""}`);
+  }
+
+  // 204 = gelukt, maar zonder inhoud: dan valt er geen JSON te lezen
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return response.json();

@@ -18,9 +18,23 @@ const entityStyles: Record<
 
 type EntitycardProps = {
   type: EntityType;
+  title?: string; // grote titel, bv. boektitel
+  subtitle?: string; // regel eronder, bv. "Gerard Reve · 1947"
+  extra?: string; // derde regel, bv. genres
+  onEdit?: () => void; // wat er gebeurt als je op het potloodje klikt
+  onDelete?: () => void; // wat er gebeurt als je op de prullenbak klikt
 };
 
-export default function Entitycard({ type }: EntitycardProps) {
+// De standaardwaarden zijn voorbeeldtekst voor de auteurs- en genrespagina,
+// die nog niet aan de API gekoppeld zijn.
+export default function Entitycard({
+  type,
+  title = "De Avonden",
+  subtitle = "Gerard Reve · 1947",
+  extra = "Roman",
+  onEdit,
+  onDelete,
+}: EntitycardProps) {
   const style = entityStyles[type];
 
   return (
@@ -45,30 +59,38 @@ export default function Entitycard({ type }: EntitycardProps) {
         </div>
       </div>
       <div className="self-stretch justify-start text-text-primary text-2xl font-semibold font-['Fraunces'] leading-7">
-        De Avonden
+        {title}
       </div>
       <div className="self-stretch flex flex-col justify-start items-start gap-1">
-        <div className="self-stretch justify-start text-text-muted text-sm font-medium font-['DM_Sans'] leading-5">
-          Gerard Reve · 1947
-        </div>
-        <div className="justify-start text-text-muted text-sm font-medium font-['DM_Sans'] leading-5">
-          Roman
-        </div>
+        {subtitle && (
+          <div className="self-stretch justify-start text-text-muted text-sm font-medium font-['DM_Sans'] leading-5">
+            {subtitle}
+          </div>
+        )}
+        {extra && (
+          <div className="justify-start text-text-muted text-sm font-medium font-['DM_Sans'] leading-5">
+            {extra}
+          </div>
+        )}
       </div>
       <div className="self-stretch h-0.5 bg-border-subtle" />
       <div className="self-stretch inline-flex justify-end items-start gap-2">
-        <div
+        <button
+          type="button"
           data-action="Edit"
-          className="size- p-2 bg-bg-surface rounded-xl shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline outline-2 outline-offset-[-2px] bg-white outline-border-strong flex justify-start items-start"
+          onClick={onEdit}
+          className="p-2 bg-white rounded-xl shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline-2 -outline-offset-2 outline-ink flex cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
         >
           <img src={editIcon} alt="Bewerken" className="size-5" />
-        </div>
-        <div
+        </button>
+        <button
+          type="button"
           data-action="Delete"
-          className="size- p-2 bg-feedback-error-soft rounded-xl shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline outline-2 outline-offset-[-2px] bg-coral-soft outline-border-strong flex justify-start items-start"
+          onClick={onDelete}
+          className="p-2 bg-coral-soft rounded-xl shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline-2 -outline-offset-2 outline-ink flex cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
         >
           <img src={deleteIcon} alt="Verwijderen" className="size-5" />
-        </div>
+        </button>
       </div>
     </div>
   );

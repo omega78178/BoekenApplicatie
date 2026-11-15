@@ -13,12 +13,14 @@ type PageHeaderProps = {
   title: string;
   searchText: string;
   buttonText?: string;
+  onButtonClick?: () => void; // wat er gebeurt als je op de knop klikt
 };
 
 export default function PageHeader({
   title,
   searchText,
   buttonText,
+  onButtonClick,
 }: PageHeaderProps) {
   return (
     <div className="w-full px-6 py-8 lg:px-20 lg:py-12 flex flex-wrap justify-between items-end gap-6">
@@ -28,7 +30,8 @@ export default function PageHeader({
         </div>
         <div className="flex items-center gap-4">
           <div className="text-text-primary text-7xl font-semibold font-['Fraunces'] leading-[72px]">
-            Alle {title}
+            Alle <em className="italic">{title}</em>
+            {/* <em> = schuingedrukt; alleen het woord "boeken"/"auteurs"/"genres" */}
           </div>
           {icons[title] && (
             <img src={icons[title]} alt="" className="size-16" />
@@ -40,7 +43,10 @@ export default function PageHeader({
           {searchText}
         </div>
         {buttonText && (
-          <div className="px-6 py-3 bg-action-primary rounded-[999px] shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] bg-cobalt outline outline-2 outline-offset-[-2px] outline-border-strong flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onButtonClick}
+            className="px-6 py-3 bg-action-primary rounded-[999px] shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] bg-cobalt outline outline-2 outline-offset-[-2px] outline-border-strong flex items-center gap-2 cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
             <div className="size-5 relative text-white">
               <div className="w-3 h-0 left-[4.17px] top-[10px] absolute outline outline-2 outline-offset-[-1.13px] outline-text-inverse" />
               <div className="w-0 h-3 left-[10px] top-[4.17px] absolute outline outline-2 outline-offset-[-1.13px] outline-text-inverse" />
@@ -48,7 +54,7 @@ export default function PageHeader({
             <div className="text-text-inverse text-base font-bold font-['DM_Sans'] text-white leading-4">
               {buttonText}
             </div>
-          </div>
+          </button>
         )}
       </div>
     </div>

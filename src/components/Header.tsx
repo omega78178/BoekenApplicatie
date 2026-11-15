@@ -100,16 +100,12 @@ export default function Header() {
             onClick={handleClick}
             data-show-icon="true"
             data-variant="Ghost"
-            className={`cursor-pointer px-6 py-3 rounded-[999px] outline-3 -outline-offset-3 outline-ink flex items-center gap-2 ${
+            className={`cursor-pointer px-6 py-3 rounded-[999px] outline-3 -outline-offset-3 outline-ink flex items-center gap-2 transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
               user ? "bg-canvas" : "bg-sunny"
             }`}
           >
             {/* Ingelogd: uitlog-icoon, niet ingelogd: slotje */}
-            <img
-              src={user ? logoutIcon : lockIcon}
-              alt=""
-              className="size-5"
-            />
+            <img src={user ? logoutIcon : lockIcon} alt="" className="size-5" />
             <div className="text-text-primary text-base font-bold font-['DM_Sans'] leading-4">
               {user ? "Uitloggen" : "Inloggen als admin"}
             </div>
