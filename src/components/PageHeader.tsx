@@ -9,8 +9,16 @@ const icons: Record<string, string> = {
   genres: driehoekje,
 };
 
+// Enkelvoud, voor "1 boek" in plaats van "1 boeken"
+const singular: Record<string, string> = {
+  auteurs: "auteur",
+  boeken: "boek",
+  genres: "genre",
+};
+
 type PageHeaderProps = {
   title: string;
+  count?: number; // aantal items uit de API; undefined = nog aan het laden
   searchText: string;
   buttonText?: string;
   onButtonClick?: () => void; // wat er gebeurt als je op de knop klikt
@@ -18,6 +26,7 @@ type PageHeaderProps = {
 
 export default function PageHeader({
   title,
+  count,
   searchText,
   buttonText,
   onButtonClick,
@@ -26,7 +35,9 @@ export default function PageHeader({
     <div className="w-full px-6 py-8 lg:px-20 lg:py-12 flex flex-wrap justify-between items-end gap-6">
       <div className="flex flex-col items-start gap-3">
         <div className="text-text-muted text-xs font-medium font-['DM_Mono'] uppercase leading-4 tracking-wide">
-          Collectie · 8 boeken
+          Collectie
+          {count !== undefined &&
+            ` · ${count} ${count === 1 ? (singular[title] ?? title) : title}`}
         </div>
         <div className="flex items-center gap-4">
           <div className="text-text-primary text-7xl font-semibold font-['Fraunces'] leading-[72px]">

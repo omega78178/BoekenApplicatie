@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { isUnauthorized } from "../api/apiFetch";
+import { useToast } from "../hooks/ToastContext";
 import { createAuthor, updateAuthor } from "../api/authors";
 import type { Author } from "../types/author";
 import FormModal, { FieldError } from "./FormModal";
@@ -26,6 +28,7 @@ export default function AuthorModal({
   onClose,
   onSaved,
 }: AuthorModalProps) {
+  const { showToast } = useToast();
   const isEdit = author !== null;
 
   const [name, setName] = useState("");
@@ -65,10 +68,20 @@ export default function AuthorModal({
         : await createAuthor(body);
       onSaved?.(saved);
       onClose(); // gelukt → modal dicht
+      showToast("success", "Opgeslagen!", `"${name}" staat netjes bij de auteurs.`);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Auteur kon niet worden opgeslagen",
-      );
+      if (isUnauthorized(err)) {
+        // 401/403: de API zegt dat je dit niet mag → gele toast
+        showToast(
+          "unauthorized",
+          "Alleen voor admins",
+          `${err.status} · Log in als administrator om "${name}" op te slaan.`,
+        );
+      } else {
+        setError(
+          err instanceof Error ? err.message : "Auteur kon niet worden opgeslagen",
+        );
+      }
     } finally {
       setSaving(false);
     }

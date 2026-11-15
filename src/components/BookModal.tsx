@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { isUnauthorized } from "../api/apiFetch";
+import { useToast } from "../hooks/ToastContext";
 import { createBook, updateBook } from "../api/books";
 import { getAuthors } from "../api/authors";
 import { getGenres } from "../api/genres";
@@ -20,6 +22,7 @@ type BookModalProps = {
 };
 
 export default function BookModal({ open, book, onClose, onSaved }: BookModalProps) {
+  const { showToast } = useToast();
   const isEdit = book !== null;
 
   const [name, setName] = useState("");
@@ -77,8 +80,18 @@ export default function BookModal({ open, book, onClose, onSaved }: BookModalPro
       const saved = isEdit ? await updateBook(book.id, body) : await createBook(body);
       onSaved?.(saved);
       onClose(); // gelukt → modal dicht
+      showToast("success", "Opgeslagen!", `"${name}" staat weer netjes in de kast.`);
     } catch (err) {
+      if (isUnauthorized(err)) {
+        // 401/403: de API zegt dat je dit niet mag → gele toast
+        showToast(
+          "unauthorized",
+          "Alleen voor admins",
+          `${err.status} · Log in als administrator om "${name}" op te slaan.`,
+        );
+      } else {
       setError(err instanceof Error ? err.message : "Boek kon niet worden opgeslagen");
+      }
     } finally {
       setSaving(false);
     }

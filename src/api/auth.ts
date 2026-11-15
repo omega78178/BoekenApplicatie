@@ -6,8 +6,11 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = {
-  // wat de API teruggeeft, bijv. token
-  token: string;
+  data: {
+    access_token: string;
+    token_type: string;
+    expires_in: number; // aantal seconden tot het token verloopt
+  };
 };
 
 export function loginRequest(

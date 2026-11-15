@@ -73,25 +73,36 @@ export default function Entitycard({
           </div>
         )}
       </div>
-      <div className="self-stretch h-0.5 bg-border-subtle" />
-      <div className="self-stretch inline-flex justify-end items-start gap-2">
-        <button
-          type="button"
-          data-action="Edit"
-          onClick={onEdit}
-          className="p-2 bg-white rounded-xl shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline-2 -outline-offset-2 outline-ink flex cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-        >
-          <img src={editIcon} alt="Bewerken" className="size-5" />
-        </button>
-        <button
-          type="button"
-          data-action="Delete"
-          onClick={onDelete}
-          className="p-2 bg-coral-soft rounded-xl shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline-2 -outline-offset-2 outline-ink flex cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-        >
-          <img src={deleteIcon} alt="Verwijderen" className="size-5" />
-        </button>
-      </div>
+      {/* Lijntje + knoppen alleen tonen als er minstens één knop is (bv. alleen voor admins) */}
+      {(onEdit || onDelete) && (
+        <>
+          <div className="self-stretch h-0.5 bg-border-subtle" />
+          <div className="self-stretch inline-flex justify-end items-start gap-2">
+            {/* Bewerk-knop: alleen als de pagina een onEdit-functie meegeeft */}
+            {onEdit && (
+              <button
+                type="button"
+                data-action="Edit"
+                onClick={onEdit}
+                className="p-2 bg-white rounded-xl shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline-2 -outline-offset-2 outline-ink flex cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              >
+                <img src={editIcon} alt="Bewerken" className="size-5" />
+              </button>
+            )}
+            {/* Verwijder-knop: alleen als de pagina een onDelete-functie meegeeft */}
+            {onDelete && (
+              <button
+                type="button"
+                data-action="Delete"
+                onClick={onDelete}
+                className="p-2 bg-coral-soft rounded-xl shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline-2 -outline-offset-2 outline-ink flex cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              >
+                <img src={deleteIcon} alt="Verwijderen" className="size-5" />
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

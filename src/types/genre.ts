@@ -3,3 +3,8 @@ export type Genre = {
   name: string;
   description: string;
 };
+
+export type NewGenre = {
+  name: string;
+  description: string;
+};

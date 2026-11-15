@@ -5,27 +5,30 @@ import Entitycard from "../components/Entitycard";
 import AuthorModal from "../components/AuthorModal";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { getAuthors, deleteAuthor } from "../api/authors";
-import { getBooks } from "../api/books";
+import { useBooks } from "../hooks/useBooks";
+import { isUnauthorized } from "../api/apiFetch";
+import { useToast } from "../hooks/ToastContext";
 import type { Author } from "../types/author";
-import type { Book } from "../types/book";
 
 export default function Auteur() {
+  const { showToast } = useToast();
   // ── State: hooks moeten BINNEN de component staan ──
   const [isOpen, setIsOpen] = useState(false); // auteur-modal staat eerst dicht
   const [authorToEdit, setAuthorToEdit] = useState<Author | null>(null); // null = nieuwe auteur, anders bewerken
   const [authorToDelete, setAuthorToDelete] = useState<Author | null>(null); // null = verwijder-modal dicht
   const [authors, setAuthors] = useState<Author[]>([]);
-  const [books, setBooks] = useState<Book[]>([]); // nodig om boeken per auteur te tellen
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false); // bezig met verwijderen?
 
-  // Auteurs én boeken tegelijk ophalen
+  // Alle boeken uit de eigen hook, nodig om boeken per auteur te tellen
+  const { books } = useBooks();
+
+  // Auteurs ophalen (de boeken komen al uit useBooks)
   function loadAuthors() {
-    Promise.all([getAuthors(), getBooks()])
-      .then(([authorList, bookList]) => {
+    getAuthors()
+      .then((authorList) => {
         setAuthors(authorList);
-        setBooks(bookList);
         setError("");
       })
       .catch((err) =>
@@ -54,8 +57,18 @@ export default function Auteur() {
       // Direct uit de state halen, zodat de kaart meteen verdwijnt
       setAuthors((current) => current.filter((a) => a.id !== authorToDelete.id));
       setError("");
+      showToast("success", "Verwijderd", `"${authorToDelete.name}" is uit de kast gehaald.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Verwijderen mislukt");
+      if (isUnauthorized(err)) {
+        // 401/403: de API zegt dat je dit niet mag → gele toast
+        showToast(
+          "unauthorized",
+          "Alleen voor admins",
+          `${err.status} · Log in als administrator om "${authorToDelete.name}" te verwijderen.`,
+        );
+      } else {
+        setError(err instanceof Error ? err.message : "Verwijderen mislukt");
+      }
     } finally {
       setDeleting(false);
       setAuthorToDelete(null); // modal dicht
@@ -67,6 +80,7 @@ export default function Auteur() {
       <Header />
       <PageHeader
         title="auteurs"
+        count={loading ? undefined : authors.length} // echt aantal uit de API
         searchText="Zoek op auteur…"
         buttonText="Nieuwe auteur"
         onButtonClick={() => openAuthorModal(null)}

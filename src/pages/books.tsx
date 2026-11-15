@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Header from "../components/Header";
 import PageHeader from "../components/PageHeader";
 import Entitycard from "../components/Entitycard";
 import BookModal from "../components/BookModal";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
-import { deleteBook, getBooks } from "../api/books";
+import { deleteBook } from "../api/books";
+import { useBooks } from "../hooks/useBooks";
+import { isUnauthorized } from "../api/apiFetch";
+import { useToast } from "../hooks/ToastContext";
 import type { Book as BookType } from "../types/book";
 
 // ── Onthouden welke boeken je zelf hebt aangemaakt ──
@@ -27,32 +30,19 @@ function removeMyBookId(id: number) {
 }
 
 export default function Book() {
+  const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false); // boek-modal staat eerst dicht
   const [bookToEdit, setBookToEdit] = useState<BookType | null>(null); // null = nieuw boek, anders bewerken
-  const [books, setBooks] = useState<BookType[]>([]); // jouw boeken
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [bookToDelete, setBookToDelete] = useState<BookType | null>(null); // null = verwijder-modal dicht
   const [deleting, setDeleting] = useState(false); // bezig met verwijderen?
 
-  // Alle boeken ophalen, en alleen die van jou overhouden
-  function loadBooks() {
-    getBooks()
-      .then((data) => {
-        const myIds = getMyBookIds();
-        setBooks(data.filter((book) => myIds.includes(book.id)));
-        setError("");
-      })
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Boeken laden mislukt"),
-      )
-      .finally(() => setLoading(false));
-  }
+  // Alle boeken komen uit de eigen hook (die laadt ze 1x bij het openen)
+  const { books: allBooks, setBooks, loading, error, setError, loadBooks } =
+    useBooks();
 
-  // 1x bij het openen van de pagina
-  useEffect(() => {
-    loadBooks();
-  }, []);
+  // Alleen jouw eigen boeken overhouden
+  const myIds = getMyBookIds();
+  const books = allBooks.filter((book) => myIds.includes(book.id));
 
   // Modal openen voor een nieuw boek (book = null) of om te bewerken
   function openBookModal(book: BookType | null) {
@@ -78,8 +68,18 @@ export default function Book() {
       // Direct uit de state halen, zodat de kaart meteen verdwijnt
       setBooks((current) => current.filter((b) => b.id !== bookToDelete.id));
       setError("");
+      showToast("success", "Verwijderd", `"${bookToDelete.name}" is uit de kast gehaald.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Verwijderen mislukt");
+      if (isUnauthorized(err)) {
+        // 401/403: de API zegt dat je dit niet mag → gele toast
+        showToast(
+          "unauthorized",
+          "Alleen voor admins",
+          `${err.status} · Log in als administrator om "${bookToDelete.name}" te verwijderen.`,
+        );
+      } else {
+        setError(err instanceof Error ? err.message : "Verwijderen mislukt");
+      }
     } finally {
       setDeleting(false);
       setBookToDelete(null); // modal dicht
@@ -91,6 +91,7 @@ export default function Book() {
       <Header />
       <PageHeader
         title="boeken"
+        count={loading ? undefined : books.length} // echt aantal uit de API
         searchText="Zoek op titel…"
         buttonText="Nieuw boek"
         onButtonClick={() => openBookModal(null)}
