@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { isUnauthorized } from "../api/apiFetch";
-import { useToast } from "../hooks/ToastContext";
-import { createAuthor, updateAuthor } from "../api/authors";
-import type { Author } from "../types/author";
+import { isUnauthorized } from "../../api/apiFetch";
+import { useToast } from "../../hooks/ToastContext";
+import { createAuthor, updateAuthor } from "../../api/authors";
+import type { Author } from "../../types/author";
 import FormModal, { FieldError } from "./FormModal";
 import {
   hintClass,
   inputClass,
   inputErrorClass,
   labelClass,
-} from "./formStyles";
+} from "../ui/formStyles";
 
 // ── Eén modal voor zowel "Nieuwe auteur" als "Auteur bewerken" ──
 // author = null  → nieuwe auteur aanmaken

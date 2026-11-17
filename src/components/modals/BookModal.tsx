@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { isUnauthorized } from "../api/apiFetch";
-import { useToast } from "../hooks/ToastContext";
-import { createBook, updateBook } from "../api/books";
-import { getAuthors } from "../api/authors";
-import { getGenres } from "../api/genres";
-import type { Book } from "../types/book";
-import type { Author } from "../types/author";
-import type { Genre } from "../types/genre";
+import { isUnauthorized } from "../../api/apiFetch";
+import { useToast } from "../../hooks/ToastContext";
+import { createBook, updateBook } from "../../api/books";
+import { getAuthors } from "../../api/authors";
+import { getGenres } from "../../api/genres";
+import type { Book } from "../../types/book";
+import type { Author } from "../../types/author";
+import type { Genre } from "../../types/genre";
 import FormModal, { FieldError } from "./FormModal";
-import { hintClass, inputClass, inputErrorClass, labelClass } from "./formStyles";
+import { hintClass, inputClass, inputErrorClass, labelClass } from "../ui/formStyles";
 
 // ── Eén modal voor zowel "Nieuw boek" als "Boek bewerken" ──
 // book = null  → nieuw boek aanmaken
@@ -142,7 +142,8 @@ export default function BookModal({ open, book, onClose, onSaved }: BookModalPro
       </label>
 
       {/* Genre + Jaar naast elkaar */}
-      <div className="flex gap-4">
+      {/* Genre en jaar: onder elkaar op mobiel, naast elkaar vanaf tablet */}
+      <div className="flex flex-col sm:flex-row gap-4">
         <label className="flex-1 flex flex-col gap-2">
           <span className={labelClass}>Genre</span>
           <select

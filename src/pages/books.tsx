@@ -1,48 +1,39 @@
 import { useState } from "react";
-import Header from "../components/Header";
-import PageHeader from "../components/PageHeader";
-import Entitycard from "../components/Entitycard";
-import BookModal from "../components/BookModal";
-import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
-import { deleteBook } from "../api/books";
+import Header from "../components/layout/Header";
+import PageHeader from "../components/layout/PageHeader";
+import CardGrid from "../components/ui/CardGrid";
+import PageStatus from "../components/ui/PageStatus";
+import BookCard from "../components/books/BookCard";
+import BookModal from "../components/modals/BookModal";
+import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
 import { useBooks } from "../hooks/useBooks";
-import { isUnauthorized } from "../api/apiFetch";
-import { useToast } from "../hooks/ToastContext";
+import { useDeleteItem } from "../hooks/useDeleteItem";
+import { deleteBook } from "../api/books";
+import { addMyBookId, onlyMyBooks, removeMyBookId } from "../utils/myBookIds";
 import type { Book as BookType } from "../types/book";
 
-// ── Onthouden welke boeken je zelf hebt aangemaakt ──
-// localStorage kan alleen tekst bewaren, dus de lijst met id's
-// zetten we om naar JSON-tekst en weer terug.
-const MY_BOOKS_KEY = "myBookIds";
-
-function getMyBookIds(): number[] {
-  return JSON.parse(localStorage.getItem(MY_BOOKS_KEY) ?? "[]");
-}
-
-function addMyBookId(id: number) {
-  const ids = getMyBookIds();
-  localStorage.setItem(MY_BOOKS_KEY, JSON.stringify([...ids, id]));
-}
-
-function removeMyBookId(id: number) {
-  const ids = getMyBookIds().filter((bookId) => bookId !== id);
-  localStorage.setItem(MY_BOOKS_KEY, JSON.stringify(ids));
-}
-
 export default function Book() {
-  const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false); // boek-modal staat eerst dicht
   const [bookToEdit, setBookToEdit] = useState<BookType | null>(null); // null = nieuw boek, anders bewerken
-  const [bookToDelete, setBookToDelete] = useState<BookType | null>(null); // null = verwijder-modal dicht
-  const [deleting, setDeleting] = useState(false); // bezig met verwijderen?
 
-  // Alle boeken komen uit de eigen hook (die laadt ze 1x bij het openen)
+  // Alle boeken komen uit de eigen hook, daarna alleen jouw eigen boeken
   const { books: allBooks, setBooks, loading, error, setError, loadBooks } =
     useBooks();
+  const books = onlyMyBooks(allBooks);
 
-  // Alleen jouw eigen boeken overhouden
-  const myIds = getMyBookIds();
-  const books = allBooks.filter((book) => myIds.includes(book.id));
+  // Alles rond verwijderen zit in een eigen hook
+  const deleter = useDeleteItem<BookType>({
+    remove: async (book) => {
+      await deleteBook(book.id);
+      removeMyBookId(book.id); // ook uit "mijn boeken" halen
+    },
+    onDeleted: (deleted) => {
+      // Direct uit de state halen, zodat de kaart meteen verdwijnt
+      setBooks((current) => current.filter((b) => b.id !== deleted.id));
+      setError("");
+    },
+    onError: setError,
+  });
 
   // Modal openen voor een nieuw boek (book = null) of om te bewerken
   function openBookModal(book: BookType | null) {
@@ -58,69 +49,34 @@ export default function Book() {
     loadBooks();
   }
 
-  // Verwijderen: na "Ja, verwijder" in de modal → naar de API → uit de lijst halen
-  async function confirmDelete() {
-    if (!bookToDelete) return;
-    setDeleting(true); // knoppen uitzetten, zodat je niet 2x klikt
-    try {
-      await deleteBook(bookToDelete.id);
-      removeMyBookId(bookToDelete.id);
-      // Direct uit de state halen, zodat de kaart meteen verdwijnt
-      setBooks((current) => current.filter((b) => b.id !== bookToDelete.id));
-      setError("");
-      showToast("success", "Verwijderd", `"${bookToDelete.name}" is uit de kast gehaald.`);
-    } catch (err) {
-      if (isUnauthorized(err)) {
-        // 401/403: de API zegt dat je dit niet mag → gele toast
-        showToast(
-          "unauthorized",
-          "Alleen voor admins",
-          `${err.status} · Log in als administrator om "${bookToDelete.name}" te verwijderen.`,
-        );
-      } else {
-        setError(err instanceof Error ? err.message : "Verwijderen mislukt");
-      }
-    } finally {
-      setDeleting(false);
-      setBookToDelete(null); // modal dicht
-    }
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-bg-canvas">
+    <div className="min-h-screen flex flex-col">
       <Header />
       <PageHeader
         title="boeken"
-        count={loading ? undefined : books.length} // echt aantal uit de API
+        count={loading ? undefined : books.length}
         searchText="Zoek op titel…"
         buttonText="Nieuw boek"
         onButtonClick={() => openBookModal(null)}
       />
 
-      {loading && (
-        <p className="px-8 text-ink-soft font-['DM_Sans']">Laden…</p>
-      )}
-      {error && <p className="px-8 text-coral font-['DM_Sans']">{error}</p>}
-      {!loading && !error && books.length === 0 && (
-        <p className="px-8 text-ink-soft font-['DM_Sans']">
-          Nog geen boeken. Klik op "Nieuw boek" om er een toe te voegen.
-        </p>
-      )}
+      <PageStatus
+        loading={loading}
+        error={error}
+        isEmpty={books.length === 0}
+        emptyText='Nog geen boeken. Klik op "Nieuw boek" om er een toe te voegen.'
+      />
 
-      {/* 4 kaarten per rij die de volle breedte van de container vullen */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl mx-auto px-8 py-8">
+      <CardGrid>
         {books.map((book) => (
-          <Entitycard
+          <BookCard
             key={book.id}
-            type="book"
-            title={book.name}
-            subtitle={`${book.author?.name ?? "Onbekende auteur"} · ${book.year}`}
-            extra={book.genres?.map((genre) => genre.name).join(", ") ?? ""}
-            onEdit={() => openBookModal(book)} // opent de modal in bewerk-modus
-            onDelete={() => setBookToDelete(book)} // opent de verwijder-modal
+            book={book}
+            onEdit={openBookModal}
+            onDelete={deleter.askDelete}
           />
         ))}
-      </div>
+      </CardGrid>
 
       <BookModal
         open={isOpen}
@@ -130,12 +86,10 @@ export default function Book() {
       />
 
       <ConfirmDeleteModal
-        name={bookToDelete ? bookToDelete.name : null}
-        onCancel={() => {
-          if (!deleting) setBookToDelete(null); // niet sluiten terwijl hij bezig is
-        }}
-        onConfirm={confirmDelete}
-        busy={deleting}
+        name={deleter.itemToDelete?.name ?? null}
+        onCancel={deleter.cancelDelete}
+        onConfirm={deleter.confirmDelete}
+        busy={deleter.deleting}
       />
     </div>
   );

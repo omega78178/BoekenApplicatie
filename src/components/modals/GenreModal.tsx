@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { isUnauthorized } from "../api/apiFetch";
-import { useToast } from "../hooks/ToastContext";
-import { createGenre, updateGenre } from "../api/genres";
-import type { Genre } from "../types/genre";
+import { isUnauthorized } from "../../api/apiFetch";
+import { useToast } from "../../hooks/ToastContext";
+import { createGenre, updateGenre } from "../../api/genres";
+import type { Genre } from "../../types/genre";
 import FormModal from "./FormModal";
-import { hintClass, inputClass, labelClass } from "./formStyles";
+import { hintClass, inputClass, labelClass } from "../ui/formStyles";
 
 // ── Eén modal voor zowel "Nieuw genre" als "Genre bewerken" ──
 // genre = null  → nieuw genre aanmaken

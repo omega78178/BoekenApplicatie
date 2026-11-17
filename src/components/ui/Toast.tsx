@@ -23,7 +23,7 @@ export default function Toast({ type, title, message, onClose }: ToastProps) {
     <div
       role="status"
       data-type={type}
-      className="w-96 max-w-[calc(100vw-3rem)] bg-surface rounded-xl shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] outline-2 -outline-offset-2 outline-ink flex items-stretch overflow-hidden"
+      className="w-full sm:w-96 bg-surface rounded-xl shadow-hard outline-2 -outline-offset-2 outline-ink flex items-stretch overflow-hidden"
     >
       {/* Gekleurd vlak links met icoon */}
       <div
@@ -44,11 +44,11 @@ export default function Toast({ type, title, message, onClose }: ToastProps) {
       </div>
 
       {/* Tekst */}
-      <div className="flex-1 px-4 py-3 flex flex-col gap-1">
-        <div className="text-ink text-base font-bold font-['DM_Sans'] leading-4">
+      <div className="flex-1 min-w-0 px-4 py-3 flex flex-col gap-1">
+        <div className="text-ink text-base font-bold leading-4">
           {title}
         </div>
-        <div className="text-ink-soft text-sm font-medium font-['DM_Sans'] leading-5">
+        <div className="text-ink-soft text-sm font-medium leading-5 break-words">
           {message}
         </div>
       </div>

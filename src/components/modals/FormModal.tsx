@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import cornerBook from "../assets/corner-book.svg";
-import cornerAuthor from "../assets/corner-author.svg";
-import cornerGenre from "../assets/corner-genre.svg";
-import { labelClass } from "./formStyles";
+import cornerBook from "../../assets/corner-book.svg";
+import cornerAuthor from "../../assets/corner-author.svg";
+import cornerGenre from "../../assets/corner-genre.svg";
+import { labelClass } from "../ui/formStyles";
 
 // ── Herbruikbare modal voor ALLE formulieren (nieuw/bewerken van boek, auteur, genre) ──
 // Deze component regelt alleen de "schil": achtergrond, venster, hoekje, badge,
@@ -47,10 +47,11 @@ export default function FormModal({
   };
 
   return (
-    // Donkere achtergrond over de hele pagina; klik erop = sluiten
+    // Donkere achtergrond over de hele pagina; klik erop = sluiten.
+    // overflow-y-auto + m-auto op het venster: gecentreerd, en scrollbaar als het scherm te laag is
     <div
       onClick={close}
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/50 overflow-y-auto p-4 flex"
     >
       {/* Het witte venster; stopPropagation = klik hierin sluit hem NIET */}
       <form
@@ -59,46 +60,46 @@ export default function FormModal({
           e.preventDefault();
           onSubmit();
         }}
-        className="relative w-full max-w-[600px] p-10 bg-surface rounded-xl shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] flex flex-col gap-6 overflow-hidden"
+        className="relative m-auto w-full max-w-150 p-6 sm:p-10 bg-surface rounded-xl shadow-hard flex flex-col gap-6 overflow-hidden"
       >
         {/* Folded corner rechtsboven, kleur per type */}
-        <img src={style.corner} alt="" className="size-16 absolute right-0 top-0" />
+        <img src={style.corner} alt="" className="size-12 sm:size-16 absolute right-0 top-0" />
         {/* Rand als laag bovenop het hoekje, net als bij Entitycard */}
         <div className="absolute inset-0 rounded-xl border-2 border-ink pointer-events-none" />
 
         {/* Kop: badge + titel */}
         <div className="flex flex-col items-start gap-2">
           <div
-            className={`px-3 py-1 ${style.bg} rounded-full outline-[1.5px] -outline-offset-[1.5px] outline-ink`}
+            className={`px-3 py-1 ${style.bg} rounded-full outline-thin outline-ink`}
           >
             <div className={labelClass}>{style.label}</div>
           </div>
-          <h2 className="text-ink text-5xl font-semibold font-['Fraunces'] leading-10">
+          <h2 className="pr-10 text-ink text-3xl sm:text-5xl font-semibold font-display leading-tight sm:leading-10">
             {title}
           </h2>
         </div>
 
         {error && (
-          <p className="text-coral text-sm font-medium font-['DM_Sans']">{error}</p>
+          <p className="text-error text-sm font-medium">{error}</p>
         )}
 
         {/* Hier komen de velden die je meegeeft */}
         {children}
 
-        {/* Knoppen */}
-        <div className="flex justify-end gap-3">
+        {/* Knoppen: op mobiel onder elkaar (Opslaan bovenaan), vanaf tablet naast elkaar */}
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
           <button
             type="button"
             onClick={close}
             disabled={saving}
-            className="px-6 py-3 rounded-full outline-2 -outline-offset-2 outline-ink text-ink text-base font-bold font-['DM_Sans'] leading-4 cursor-pointer transition-all duration-150 hover:bg-paper-deep disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 rounded-full outline-2 -outline-offset-2 outline-ink text-ink text-base font-bold leading-4 cursor-pointer transition-all duration-150 hover:bg-paper-deep disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Annuleren
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-3 bg-cobalt rounded-full shadow-[2px_2px_0px_0px_rgba(22,19,15,1.00)] outline-2 -outline-offset-2 outline-ink flex items-center gap-2 text-white text-base font-bold font-['DM_Sans'] leading-4 cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(22,19,15,1.00)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-x-0 disabled:translate-y-0"
+            className="px-6 py-3 bg-cobalt rounded-full shadow-hard-sm outline-2 -outline-offset-2 outline-ink flex justify-center items-center gap-2 text-white text-base font-bold leading-4 cursor-pointer transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-x-0 disabled:translate-y-0"
           >
             {/* Vinkje-icoon */}
             <svg viewBox="0 0 20 20" className="size-5" fill="none">
@@ -116,7 +117,7 @@ export default function FormModal({
 export function FieldError({ message }: { message: string }) {
   if (!message) return null;
   return (
-    <span className="inline-flex items-center gap-1 text-ink text-sm font-medium font-['DM_Sans'] leading-5">
+    <span className="inline-flex items-center gap-1 text-ink text-sm font-medium leading-5">
       <svg viewBox="0 0 16 16" className="size-4 shrink-0" fill="none">
         <circle cx="8" cy="8" r="6.67" strokeWidth="2" className="stroke-coral" />
         <path d="M8 5.33V8M8 10.67h.01" strokeWidth="2" strokeLinecap="round" className="stroke-coral" />

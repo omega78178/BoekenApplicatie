@@ -44,6 +44,15 @@
   --shadow-hard: 4px 4px 0 var(--color-ink);
 }
 
+/* Dunne rand (1.5px) voor badges/labels uit het design.
+   Tailwind heeft alleen hele pixels (outline, outline-2…), daarom een eigen class.
+   Gebruik: className="outline-thin outline-ink" */
+@utility outline-thin {
+  outline-style: solid;
+  outline-width: 1.5px;
+  outline-offset: -1.5px;
+}
+
 body {
   @apply bg-canvas text-ink font-sans antialiased;
 }

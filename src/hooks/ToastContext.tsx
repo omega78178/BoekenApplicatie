@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import Toast, { type ToastType } from "../components/Toast";
+import Toast, { type ToastType } from "../components/ui/Toast";
 
 // ── Toasts overal in de app kunnen tonen ──
 // Werkt net als AuthContext: de Provider staat om de hele app heen (main.tsx),
@@ -42,8 +42,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
 
-      {/* Rechtsonder, boven alles (ook boven modals: z-50) */}
-      <div className="fixed bottom-6 right-6 z-[60] flex flex-col gap-3">
+      {/* Boven alles (ook boven modals: z-50).
+          Mobiel: onderaan over de volle breedte. Vanaf tablet: rechtsonder. */}
+      <div className="fixed inset-x-4 bottom-4 sm:inset-x-auto sm:right-6 sm:bottom-6 z-60 flex flex-col items-stretch sm:items-end gap-3">
         {toasts.map((toast) => (
           <Toast
             key={toast.id}
