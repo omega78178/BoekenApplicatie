@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { isUnauthorized } from "../../api/apiFetch";
 import { useToast } from "../../hooks/ToastContext";
 import { createBook, updateBook } from "../../api/books";
@@ -7,6 +9,7 @@ import { getGenres } from "../../api/genres";
 import type { Book } from "../../types/book";
 import type { Author } from "../../types/author";
 import type { Genre } from "../../types/genre";
+import { bookSchema, type BookForm } from "../../schemas/book";
 import FormModal, { FieldError } from "./FormModal";
 import { hintClass, inputClass, inputErrorClass, labelClass } from "../ui/formStyles";
 
@@ -25,17 +28,22 @@ export default function BookModal({ open, book, onClose, onSaved }: BookModalPro
   const { showToast } = useToast();
   const isEdit = book !== null;
 
-  const [name, setName] = useState("");
-  const [authorId, setAuthorId] = useState("");
-  const [genreId, setGenreId] = useState("");
-  const [year, setYear] = useState("");
-  const [yearError, setYearError] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(""); // algemene fout van de API
   const [saving, setSaving] = useState(false);
 
   // De keuzes voor de dropdowns
   const [authors, setAuthors] = useState<Author[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<BookForm>({
+    resolver: zodResolver(bookSchema),
+  });
 
   // Elke keer als de modal opengaat:
   // 1. velden vullen (bewerken) of leegmaken (nieuw)
@@ -43,11 +51,12 @@ export default function BookModal({ open, book, onClose, onSaved }: BookModalPro
   useEffect(() => {
     if (!open) return;
 
-    setName(book?.name ?? "");
-    setAuthorId(book?.author ? String(book.author.id) : "");
-    setGenreId(book?.genres?.[0] ? String(book.genres[0].id) : ""); // eerste genre
-    setYear(book ? String(book.year) : "");
-    setYearError("");
+    reset({
+      name: book?.name ?? "",
+      author_id: book?.author ? String(book.author.id) : "",
+      genre_id: book?.genres?.[0] ? String(book.genres[0].id) : "", // eerste genre
+      year: book?.year,
+    });
     setError("");
 
     Promise.all([getAuthors(), getGenres()])
@@ -56,22 +65,16 @@ export default function BookModal({ open, book, onClose, onSaved }: BookModalPro
         setGenres(genreList);
       })
       .catch(() => setError("Auteurs en genres konden niet geladen worden"));
-  }, [open, book]);
+  }, [open, book, reset]);
 
-  const handleSubmit = async () => {
-    // Jaartal controleren voordat we iets naar de API sturen
-    if (!/^\d{4}$/.test(year)) {
-      setYearError("Vul een jaartal in, bijv. 1947.");
-      return;
-    }
-    setYearError("");
-
+  // Draait ALLEEN als zod alles goedkeurt; data is dan al gecontroleerd
+  const onSubmit = async (data: BookForm) => {
     // Precies de vorm van de request body uit de documentatie
     const body = {
-      name: name,
-      year: Number(year),
-      author_id: Number(authorId),
-      genre_ids: genreId ? [Number(genreId)] : [], // API wil een lijst
+      name: data.name,
+      year: data.year,
+      author_id: Number(data.author_id),
+      genre_ids: data.genre_id ? [Number(data.genre_id)] : [], // API wil een lijst
     };
 
     setSaving(true);
@@ -80,17 +83,17 @@ export default function BookModal({ open, book, onClose, onSaved }: BookModalPro
       const saved = isEdit ? await updateBook(book.id, body) : await createBook(body);
       onSaved?.(saved);
       onClose(); // gelukt → modal dicht
-      showToast("success", "Opgeslagen!", `"${name}" staat weer netjes in de kast.`);
+      showToast("success", "Opgeslagen!", `"${data.name}" staat weer netjes in de kast.`);
     } catch (err) {
       if (isUnauthorized(err)) {
         // 401/403: de API zegt dat je dit niet mag → gele toast
         showToast(
           "unauthorized",
           "Alleen voor admins",
-          `${err.status} · Log in als administrator om "${name}" op te slaan.`,
+          `${err.status} · Log in als administrator om "${data.name}" op te slaan.`,
         );
       } else {
-      setError(err instanceof Error ? err.message : "Boek kon niet worden opgeslagen");
+        setError(err instanceof Error ? err.message : "Boek kon niet worden opgeslagen");
       }
     } finally {
       setSaving(false);
@@ -105,29 +108,29 @@ export default function BookModal({ open, book, onClose, onSaved }: BookModalPro
       error={error}
       saving={saving}
       onClose={onClose}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
       {/* Titel */}
       <label className="flex flex-col gap-2">
         <span className={labelClass}>Titel</span>
         <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          {...register("name")}
           placeholder="De Avonden"
-          required
-          className={inputClass}
+          className={errors.name ? inputErrorClass : inputClass}
         />
         <span className={hintClass}>Zoals op de kaft.</span>
+        <FieldError message={errors.name?.message} />
       </label>
 
-      {/* Auteur: je ziet de naam, maar de value is het id */}
+      {/* Auteur: je ziet de naam, maar de value is het id.
+          value={watch(...)}: de auteurs komen pas later binnen van de API,
+          zo blijft bij bewerken toch de juiste auteur gekozen. */}
       <label className="flex flex-col gap-2">
         <span className={labelClass}>Auteur</span>
         <select
-          value={authorId}
-          onChange={(e) => setAuthorId(e.target.value)}
-          required
-          className={`${inputClass} cursor-pointer`}
+          {...register("author_id")}
+          value={watch("author_id")}
+          className={`${errors.author_id ? inputErrorClass : inputClass} cursor-pointer`}
         >
           <option value="" disabled>
             Kies een auteur…
@@ -139,16 +142,16 @@ export default function BookModal({ open, book, onClose, onSaved }: BookModalPro
           ))}
         </select>
         <span className={hintClass}>Kies uit de bestaande auteurs.</span>
+        <FieldError message={errors.author_id?.message} />
       </label>
 
-      {/* Genre + Jaar naast elkaar */}
       {/* Genre en jaar: onder elkaar op mobiel, naast elkaar vanaf tablet */}
       <div className="flex flex-col sm:flex-row gap-4">
         <label className="flex-1 flex flex-col gap-2">
           <span className={labelClass}>Genre</span>
           <select
-            value={genreId}
-            onChange={(e) => setGenreId(e.target.value)}
+            {...register("genre_id")}
+            value={watch("genre_id")} // zelfde reden als bij auteur
             className={`${inputClass} cursor-pointer`}
           >
             <option value="">Geen genre</option>
@@ -164,12 +167,11 @@ export default function BookModal({ open, book, onClose, onSaved }: BookModalPro
           <span className={labelClass}>Jaar</span>
           <input
             type="number"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
+            {...register("year", { valueAsNumber: true })} // maakt van de tekst een getal
             placeholder="1947"
-            className={yearError ? inputErrorClass : inputClass}
+            className={errors.year ? inputErrorClass : inputClass}
           />
-          <FieldError message={yearError} />
+          <FieldError message={errors.year?.message} />
         </label>
       </div>
     </FormModal>

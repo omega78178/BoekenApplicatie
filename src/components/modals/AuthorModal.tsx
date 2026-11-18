@@ -4,6 +4,9 @@ import { useToast } from "../../hooks/ToastContext";
 import { createAuthor, updateAuthor } from "../../api/authors";
 import type { Author } from "../../types/author";
 import FormModal, { FieldError } from "./FormModal";
+import { authorSchema, type AuthorForm } from "../../schemas/author";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   hintClass,
   inputClass,
@@ -31,55 +34,55 @@ export default function AuthorModal({
   const { showToast } = useToast();
   const isEdit = author !== null;
 
-  const [name, setName] = useState("");
-  const [birthYear, setBirthYear] = useState("");
-  const [yearError, setYearError] = useState("");
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(""); // algemene fout van de API (blijft)
+  const [saving, setSaving] = useState(false); // blijft
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<AuthorForm>({
+    resolver: zodResolver(authorSchema),
+  });
 
   // Elke keer als de modal opengaat: velden vullen (bewerken) of leegmaken (nieuw)
   useEffect(() => {
     if (!open) return;
 
-    setName(author?.name ?? "");
-    setBirthYear(author ? String(author.birth_year) : "");
-    setYearError("");
+    // reset() vult de velden (bewerken) of maakt ze leeg (nieuw), en wist oude zod-fouten
+    reset({ name: author?.name ?? "", birth_year: author?.birth_year });
     setError("");
-  }, [open, author]);
+  }, [open, author, reset]);
 
-  const handleSubmit = async () => {
-    // Geboortejaar controleren voordat we iets naar de API sturen
-    if (!/^\d{4}$/.test(birthYear)) {
-      setYearError("Vul een geboortejaar in, bijv. 1923.");
-      return;
-    }
-    setYearError("");
-
-    const body = {
-      name: name,
-      birth_year: Number(birthYear),
-    };
-
+  // Draait ALLEEN als zod alles goedkeurt; data is dan al gecontroleerd
+  const onSubmit = async (data: AuthorForm) => {
     setSaving(true);
     try {
       // Bewerken → PUT, nieuw → POST
       const saved = isEdit
-        ? await updateAuthor(author.id, body)
-        : await createAuthor(body);
+        ? await updateAuthor(author.id, data)
+        : await createAuthor(data);
       onSaved?.(saved);
       onClose(); // gelukt → modal dicht
-      showToast("success", "Opgeslagen!", `"${name}" staat netjes bij de auteurs.`);
+      showToast(
+        "success",
+        "Opgeslagen!",
+        `"${data.name}" staat netjes bij de auteurs.`,
+      );
     } catch (err) {
       if (isUnauthorized(err)) {
         // 401/403: de API zegt dat je dit niet mag → gele toast
         showToast(
           "unauthorized",
           "Alleen voor admins",
-          `${err.status} · Log in als administrator om "${name}" op te slaan.`,
+          `${err.status} · Log in als administrator om "${data.name}" op te slaan.`,
         );
       } else {
         setError(
-          err instanceof Error ? err.message : "Auteur kon niet worden opgeslagen",
+          err instanceof Error
+            ? err.message
+            : "Auteur kon niet worden opgeslagen",
         );
       }
     } finally {
@@ -95,19 +98,18 @@ export default function AuthorModal({
       error={error}
       saving={saving}
       onClose={onClose}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
       {/* Naam */}
       <label className="flex flex-col gap-2">
         <span className={labelClass}>Naam</span>
         <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          {...register("name")}
           placeholder="Gerard Reve"
-          required
-          className={inputClass}
+          className={errors.name ? inputErrorClass : inputClass}
         />
         <span className={hintClass}>Voor- en achternaam.</span>
+        <FieldError message={errors.name?.message} />
       </label>
 
       {/* Geboortejaar */}
@@ -115,12 +117,11 @@ export default function AuthorModal({
         <span className={labelClass}>Geboortejaar</span>
         <input
           type="number"
-          value={birthYear}
-          onChange={(e) => setBirthYear(e.target.value)}
+          {...register("birth_year", { valueAsNumber: true })}
           placeholder="1923"
-          className={yearError ? inputErrorClass : inputClass}
+          className={errors.birth_year ? inputErrorClass : inputClass}
         />
-        <FieldError message={yearError} />
+        <FieldError message={errors.birth_year?.message} />
       </label>
     </FormModal>
   );

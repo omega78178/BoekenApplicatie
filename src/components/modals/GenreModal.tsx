@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { isUnauthorized } from "../../api/apiFetch";
 import { useToast } from "../../hooks/ToastContext";
 import { createGenre, updateGenre } from "../../api/genres";
 import type { Genre } from "../../types/genre";
-import FormModal from "./FormModal";
-import { hintClass, inputClass, labelClass } from "../ui/formStyles";
+import { genreSchema, type GenreForm } from "../../schemas/genre";
+import FormModal, { FieldError } from "./FormModal";
+import {
+  hintClass,
+  inputClass,
+  inputErrorClass,
+  labelClass,
+} from "../ui/formStyles";
 
 // ── Eén modal voor zowel "Nieuw genre" als "Genre bewerken" ──
 // genre = null  → nieuw genre aanmaken
@@ -26,43 +34,45 @@ export default function GenreModal({
   const { showToast } = useToast();
   const isEdit = genre !== null;
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(""); // algemene fout van de API
   const [saving, setSaving] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<GenreForm>({
+    resolver: zodResolver(genreSchema),
+  });
 
   // Elke keer als de modal opengaat: velden vullen (bewerken) of leegmaken (nieuw)
   useEffect(() => {
     if (!open) return;
 
-    setName(genre?.name ?? "");
-    setDescription(genre?.description ?? "");
+    // reset() vult de velden en wist oude zod-fouten
+    reset({ name: genre?.name ?? "", description: genre?.description ?? "" });
     setError("");
-  }, [open, genre]);
+  }, [open, genre, reset]);
 
-  const handleSubmit = async () => {
-    // Geen jaartal-check nodig: naam en beschrijving zijn allebei gewoon tekst
-    const body = {
-      name: name,
-      description: description,
-    };
-
+  // Draait ALLEEN als zod alles goedkeurt; data is dan al gecontroleerd
+  const onSubmit = async (data: GenreForm) => {
     setSaving(true);
     try {
       // Bewerken → PUT, nieuw → POST
       const saved = isEdit
-        ? await updateGenre(genre.id, body)
-        : await createGenre(body);
+        ? await updateGenre(genre.id, data)
+        : await createGenre(data);
       onSaved?.(saved);
       onClose(); // gelukt → modal dicht
-      showToast("success", "Opgeslagen!", `"${name}" staat netjes bij de genres.`);
+      showToast("success", "Opgeslagen!", `"${data.name}" staat netjes bij de genres.`);
     } catch (err) {
       if (isUnauthorized(err)) {
         // 401/403: de API zegt dat je dit niet mag → gele toast
         showToast(
           "unauthorized",
           "Alleen voor admins",
-          `${err.status} · Log in als administrator om "${name}" op te slaan.`,
+          `${err.status} · Log in als administrator om "${data.name}" op te slaan.`,
         );
       } else {
         setError(
@@ -82,32 +92,30 @@ export default function GenreModal({
       error={error}
       saving={saving}
       onClose={onClose}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
       {/* Naam */}
       <label className="flex flex-col gap-2">
         <span className={labelClass}>Naam</span>
         <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          {...register("name")}
           placeholder="Roman"
-          required
-          className={inputClass}
+          className={errors.name ? inputErrorClass : inputClass}
         />
+        <FieldError message={errors.name?.message} />
       </label>
 
       {/* Beschrijving: textarea, want dit is een langere tekst */}
       <label className="flex flex-col gap-2">
         <span className={labelClass}>Beschrijving</span>
         <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          {...register("description")}
           placeholder="Een lang verhalend prozawerk…"
           rows={3}
-          required
-          className={`${inputClass} resize-none`}
+          className={`${errors.description ? inputErrorClass : inputClass} resize-none`}
         />
         <span className={hintClass}>Een korte uitleg van het genre.</span>
+        <FieldError message={errors.description?.message} />
       </label>
     </FormModal>
   );

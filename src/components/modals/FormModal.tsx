@@ -114,7 +114,7 @@ export default function FormModal({
 }
 
 // Kleine foutmelding onder een veld, met uitroepteken-icoon
-export function FieldError({ message }: { message: string }) {
+export function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return (
     <span className="inline-flex items-center gap-1 text-ink text-sm font-medium leading-5">

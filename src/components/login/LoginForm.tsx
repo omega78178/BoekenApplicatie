@@ -1,22 +1,33 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import TextField from "../ui/TextField";
 import { hintClass } from "../ui/formStyles";
 import { useAuth } from "../../hooks/Authcontext";
+import { loginSchema, type LoginFormValues } from "../../schemas/login";
 
 // Het loginformulier: alle state en login-logica staan hier bij elkaar
 function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(""); // fout van de API (verkeerd wachtwoord)
   const { login, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const ok = await login(email, password);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }, // isSubmitting = true zolang onSubmit bezig is
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  // Draait ALLEEN als zod alles goedkeurt (beide velden ingevuld, geldig e-mailadres)
+  const onSubmit = async (data: LoginFormValues) => {
+    setError("");
+    const ok = await login(data.email, data.password);
     if (ok) {
       navigate("/book");
     } else {
@@ -26,7 +37,8 @@ function LoginForm() {
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate // browser-popups uit, zodat je de meldingen van zod ziet
       className="w-full max-w-sm p-6 lg:p-10 bg-surface rounded-xl shadow-hard outline-2 -outline-offset-2 outline-ink flex flex-col items-start gap-6"
     >
       <div className="flex flex-col items-start gap-2">
@@ -41,20 +53,20 @@ function LoginForm() {
       <TextField
         label="E-mailadres"
         type="email"
-        value={email}
-        onChange={setEmail}
+        {...register("email")}
+        error={errors.email?.message}
         placeholder="admin@admin.com"
       />
       <TextField
         label="Wachtwoord"
         type="password"
-        value={password}
-        onChange={setPassword}
+        {...register("password")}
+        error={errors.password?.message}
         placeholder="••••••••"
       />
 
-      <Button type="submit" className="self-stretch">
-        Inloggen
+      <Button type="submit" disabled={isSubmitting} className="self-stretch">
+        {isSubmitting ? "Bezig…" : "Inloggen"}
       </Button>
 
       <p className={hintClass}>

@@ -1,32 +1,25 @@
-import { labelClass, inputClass } from "./formStyles";
+import type { ComponentProps } from "react";
+import { labelClass, inputClass, inputErrorClass } from "./formStyles";
+import { FieldError } from "../modals/FormModal";
 
-type TextFieldProps = {
+// label + error zijn van ons, de rest (type, placeholder, en alles van register()) gaat naar de <input>
+type TextFieldProps = ComponentProps<"input"> & {
   label: string;
-  type?: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
+  error?: string; // foutmelding onder het veld (bv. van zod)
 };
 
 // Label + input in één. Door de <label> eromheen kun je op de tekst klikken
-// om in het veld te komen.
-function TextField({
-  label,
-  type = "text",
-  value,
-  onChange,
-  placeholder,
-}: TextFieldProps) {
+// om in het veld te komen. Werkt met {...register("veld")} van react-hook-form.
+function TextField({ label, error, type = "text", ...inputProps }: TextFieldProps) {
   return (
     <label className="self-stretch flex flex-col gap-2">
       <span className={labelClass}>{label}</span>
       <input
         type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={inputClass}
+        {...inputProps}
+        className={error ? inputErrorClass : inputClass}
       />
+      <FieldError message={error} />
     </label>
   );
 }
