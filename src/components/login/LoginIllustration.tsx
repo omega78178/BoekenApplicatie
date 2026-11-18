@@ -10,7 +10,14 @@ import triangle from "../../assets/login-triangle.svg";
 // Geef je de svg een breedte (bv. w-full), dan schaalt alles evenredig mee.
 function LoginIllustration({ className = "" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 562 362" className={className} aria-hidden="true">
+    // preserveAspectRatio: altijd in verhouding schalen (meet), links uitgelijnd (xMin)
+    // en verticaal in het midden (YMid). Zo past hij in de breedte én de hoogte.
+    <svg
+      viewBox="0 0 562 362"
+      preserveAspectRatio="xMinYMid meet"
+      className={className}
+      aria-hidden="true"
+    >
       <defs>
         {/* Eén rastervakje van 40 × 40, dat zich herhaalt */}
         <pattern id="login-grid" width="40" height="40" patternUnits="userSpaceOnUse">
